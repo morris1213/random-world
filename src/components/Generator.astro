@@ -1,0 +1,486 @@
+
+---
+// No server-side logic needed for this component
+---
+
+<div class="generator-container">
+  <div class="header">
+    <h1 class="title">随机信息生成器</h1>
+    <p class="subtitle">一键生成多国个人信息</p>
+  </div>
+
+  <div class="controls">
+    <div class="select-container">
+        <select id="country-select">
+            <option value="US">United States</option>
+            <option value="GB">United Kingdom</option>
+            <option value="CA">Canada</option>
+            <option value="AU">Australia</option>
+            <option value="DE">Germany</option>
+            <option value="JP">Japan</option>
+        </select>
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+    </div>
+    <button id="generate-btn" class="button-glow">
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+      <span>生成新信息</span>
+    </button>
+  </div>
+
+  <div id="result-container" class="result-card"></div>
+
+  <div class="controls">
+    <button id="copy-btn" class="button-secondary" disabled>
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+      <span>复制信息</span>
+    </button>
+  </div>
+</div>
+
+<script>
+  // --- DOM Elements ---
+  const generateBtn = document.getElementById('generate-btn');
+  const copyBtn = document.getElementById('copy-btn');
+  const resultContainer = document.getElementById('result-container');
+  const countrySelect = document.getElementById('country-select');
+
+  // --- Data for Generation ---
+  const emailDomains = {
+    common: ['gmail.com', 'yahoo.com', 'outlook.com', 'icloud.com'],
+    US: ['aol.com', 'comcast.net'],
+    GB: ['hotmail.co.uk', 'btinternet.com', 'sky.com'],
+    DE: ['web.de', 'gmx.de', 't-online.de'],
+    JP: ['yahoo.co.jp', 'ocn.ne.jp']
+  };
+
+  const countryData = {
+    "US": {
+        firstNames: ['John', 'Michael', 'David', 'James', 'Robert', 'Chris', 'Mary', 'Jennifer', 'Linda', 'Patricia', 'Jessica', 'Sarah'],
+        lastNames: ['Smith', 'Johnson', 'Williams', 'Brown', 'Jones', 'Garcia', 'Miller', 'Davis', 'Rodriguez', 'Martinez'],
+        streetNames: ['Main St', 'Highland Ave', 'Maple St', 'Oak Ave', 'Pine St', 'Washington St'],
+        jobTitles: ['Software Engineer', 'Project Manager', 'Data Scientist', 'Graphic Designer', 'Marketing Manager', 'Accountant'],
+        phoneFormat: () => `(${getRandomNumber(201, 999)}) ${getRandomNumber(100, 999)}-${getRandomNumber(1000, 9999)}`,
+        nationalIdName: "SSN",
+        nationalIdFormat: () => `${getRandomNumber(100, 999)}-${getRandomNumber(10, 99)}-${getRandomNumber(1000, 9999)}`,
+        emailDomains: [...emailDomains.common, ...emailDomains.US],
+        address: {
+            states: { "CA": "California", "NY": "New York", "TX": "Texas", "FL": "Florida", "IL": "Illinois" },
+            citiesByState: { "CA": ["Los Angeles", "San Francisco", "San Diego"], "NY": ["New York City", "Buffalo"], "TX": ["Houston", "Dallas"], "FL": ["Miami", "Orlando"], "IL": ["Chicago", "Springfield"] },
+            format: (addr) => `${addr.street}, ${addr.city}, ${addr.stateAbbr} ${addr.zip}`
+        }
+    },
+    "GB": {
+        firstNames: ['Oliver', 'George', 'Harry', 'Noah', 'Jack', 'Leo', 'Olivia', 'Amelia', 'Isla', 'Ava', 'Emily', 'Mia'],
+        lastNames: ['Smith', 'Jones', 'Taylor', 'Brown', 'Williams', 'Wilson', 'Johnson', 'Davies', 'Robinson', 'Wright'],
+        streetNames: ['High Street', 'Station Road', 'Main Street', 'Park Road', 'Church Road', 'London Road'],
+        jobTitles: ['Software Developer', 'Project Manager', 'Data Analyst', 'Graphic Designer', 'Marketing Executive', 'Accountant'],
+        phoneFormat: () => `07${getRandomNumber(100, 999)} ${getRandomNumber(100000, 999999)}`,
+        nationalIdName: "NINO",
+        nationalIdFormat: () => `QQ ${getRandomNumber(10, 99)} ${getRandomNumber(10, 99)} ${getRandomNumber(10, 99)} A`,
+        emailDomains: [...emailDomains.common, ...emailDomains.GB],
+        address: {
+            cities: ['London', 'Manchester', 'Birmingham', 'Glasgow', 'Liverpool', 'Bristol'],
+            counties: ['Greater London', 'Greater Manchester', 'West Midlands', 'West Yorkshire', 'Merseyside'],
+            format: (addr) => `${addr.street}, ${addr.city}, ${addr.county}, ${addr.postcode}`
+        }
+    },
+    "CA": {
+        firstNames: ['Liam', 'Noah', 'William', 'James', 'Oliver', 'Benjamin', 'Olivia', 'Emma', 'Charlotte', 'Amelia', 'Sophia', 'Mia'],
+        lastNames: ['Smith', 'Brown', 'Tremblay', 'Martin', 'Roy', 'Gagnon', 'Lee', 'Wilson', 'Johnson', 'MacDonald'],
+        streetNames: ['Main St', 'Queen St', 'King St', 'Maple Ave', 'Church St', 'Park Ave'],
+        jobTitles: ['Software Developer', 'Project Coordinator', 'Data Analyst', 'UX/UI Designer', 'Digital Marketer', 'Bookkeeper'],
+        phoneFormat: () => `(${getRandomNumber(201, 999)}) ${getRandomNumber(100, 999)}-${getRandomNumber(1000, 9999)}`,
+        nationalIdName: "SIN",
+        nationalIdFormat: () => `${getRandomNumber(100, 999)}-${getRandomNumber(100, 999)}-${getRandomNumber(100, 999)}`,
+        emailDomains: emailDomains.common,
+        address: {
+            provinces: { "ON": "Ontario", "QC": "Quebec", "BC": "British Columbia", "AB": "Alberta" },
+            citiesByProvince: { "ON": ["Toronto", "Ottawa"], "QC": ["Montreal", "Quebec City"], "BC": ["Vancouver", "Victoria"], "AB": ["Calgary", "Edmonton"] },
+            format: (addr) => `${addr.street}, ${addr.city}, ${addr.provinceAbbr} ${addr.postalCode}`
+        }
+    },
+    "AU": {
+        firstNames: ['Jack', 'Oliver', 'Noah', 'William', 'Leo', 'Henry', 'Charlotte', 'Olivia', 'Amelia', 'Isla', 'Mia', 'Grace'],
+        lastNames: ['Smith', 'Jones', 'Williams', 'Brown', 'Wilson', 'Taylor', 'Johnson', 'White', 'Martin', 'Anderson'],
+        streetNames: ['George St', 'Elizabeth St', 'Collins St', 'Macquarie St', 'King William St', 'Murray St'],
+        jobTitles: ['Software Engineer', 'Project Officer', 'Data Analyst', 'UX Designer', 'Marketing Coordinator', 'Accountant'],
+        phoneFormat: () => `04${getRandomNumber(10, 99)} ${getRandomNumber(100, 999)} ${getRandomNumber(100, 999)}`,
+        nationalIdName: "TFN",
+        nationalIdFormat: () => `${getRandomNumber(100, 999)} ${getRandomNumber(100, 999)} ${getRandomNumber(100, 999)}`,
+        emailDomains: emailDomains.common,
+        address: {
+            states: { "NSW": "New South Wales", "VIC": "Victoria", "QLD": "Queensland", "WA": "Western Australia", "SA": "South Australia"},
+            citiesByState: { "NSW": ["Sydney"], "VIC": ["Melbourne"], "QLD": ["Brisbane"], "WA": ["Perth"], "SA": ["Adelaide"] },
+            format: (addr) => `${addr.street}, ${addr.city}, ${addr.stateAbbr} ${addr.postcode}`
+        }
+    },
+    "DE": {
+        firstNames: ['Maximilian', 'Alexander', 'Paul', 'Ben', 'Leon', 'Elias', 'Sophie', 'Marie', 'Maria', 'Mia', 'Emma', 'Hannah'],
+        lastNames: ['Müller', 'Schmidt', 'Schneider', 'Fischer', 'Weber', 'Meyer', 'Wagner', 'Becker', 'Schulz', 'Hoffmann'],
+        streetNames: ['Hauptstraße', 'Bahnhofstraße', 'Bergstraße', 'Dorfstraße', 'Schulstraße', 'Kirchplatz'],
+        jobTitles: ['Softwareentwickler', 'Projektmanager', 'Datenanalyst', 'Web-Designer', 'Marketing Manager', 'Buchhalter'],
+        phoneFormat: () => `0${getRandomNumber(100, 999)} ${getRandomNumber(1000000, 9999999)}`,
+        nationalIdName: "Steuer-IdNr",
+        nationalIdFormat: () => `${getRandomNumber(10,99)} ${getRandomNumber(100,999)} ${getRandomNumber(100,999)} ${getRandomNumber(100,999)}`,
+        emailDomains: [...emailDomains.common, ...emailDomains.DE],
+        address: {
+            cities: ['Berlin', 'Hamburg', 'München', 'Köln', 'Frankfurt am Main'],
+            format: (addr) => `${addr.street} ${getRandomNumber(1, 200)}, ${addr.postcode} ${addr.city}`
+        }
+    },
+    "JP": {
+        firstNames: ['Hiroshi', 'Takeshi', 'Akira', 'Kenji', 'Satoshi', 'Yuki', 'Yui', 'Aoi', 'Hina', 'Sakura', 'Rin', 'Emi'],
+        lastNames: ['Sato', 'Suzuki', 'Takahashi', 'Tanaka', 'Watanabe', 'Ito', 'Yamamoto', 'Nakamura', 'Kobayashi', 'Kato'],
+        streetNames: ['中央', '本町', '駅前', '公園通り', '平和'],
+        jobTitles: ['ソフトウェアエンジニア', 'プロジェクトマネージャー', 'データサイエンティスト', 'ウェブデザイナー', 'マーケティング担当', '会計士'],
+        phoneFormat: () => `0${getRandomNumber(8,9)}0-${getRandomNumber(1000, 9999)}-${getRandomNumber(1000, 9999)}`,
+        nationalIdName: "My Number",
+        nationalIdFormat: () => `${getRandomNumber(1000, 9999)} ${getRandomNumber(1000, 9999)} ${getRandomNumber(1000, 9999)}`,
+        emailDomains: [...emailDomains.common, ...emailDomains.JP],
+        address: {
+            prefectures: ['東京都', '大阪府', '京都府', '北海道', '福岡県'],
+            cities: ['東京', '横浜市', '大阪市', '名古屋市', '札幌市', '福岡市', '京都市'],
+            format: (addr) => `〒${addr.postcode} ${addr.prefecture}${addr.city}${getRandomElement(addr.wards)} ${getRandomNumber(1,10)}-${getRandomNumber(1,20)}`,
+            wards: ['中央区', '新宿区', '渋谷区', '北区', '南区']
+        }
+    }
+  };
+
+  const creditCardIssuers = {
+    'Visa': '4',
+    'Mastercard': '5',
+    'American Express': '3'
+  };
+
+  // --- Helper Functions ---
+  function getRandomElement(arr) {
+    return arr[Math.floor(Math.random() * arr.length)];
+  }
+
+  function getRandomNumber(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+  }
+  
+  function generateCreditCard() {
+      const issuerName = getRandomElement(Object.keys(creditCardIssuers));
+      const prefix = creditCardIssuers[issuerName];
+      let number = prefix;
+      const length = issuerName === 'American Express' ? 14 : 15;
+      for (let i = 0; i < length; i++) {
+          number += Math.floor(Math.random() * 10);
+      }
+      const expiry = `${getRandomNumber(1, 12).toString().padStart(2, '0')}/${getRandomNumber(25, 30)}`;
+      const cvv = issuerName === 'American Express' ? getRandomNumber(1000, 9999) : getRandomNumber(100, 999);
+      return { issuer: issuerName, number: number.replace(/(\d{4})/g, '$1 ').trim(), expiry, cvv };
+  }
+
+  function generateAddress(countryCode) {
+    const data = countryData[countryCode];
+    const street = `${getRandomNumber(100, 9999)} ${getRandomElement(data.streetNames)}`;
+    let address = { street };
+
+    if (countryCode === 'US') {
+        const stateAbbr = getRandomElement(Object.keys(data.address.states));
+        address.stateName = data.address.states[stateAbbr];
+        address.city = getRandomElement(data.address.citiesByState[stateAbbr]);
+        address.stateAbbr = stateAbbr;
+        address.zip = `${getRandomNumber(10000, 99999)}`;
+    } else if (countryCode === 'GB') {
+        address.city = getRandomElement(data.address.cities);
+        address.county = getRandomElement(data.address.counties);
+        const postcodeChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        address.postcode = `${getRandomElement(postcodeChars)}${getRandomElement(postcodeChars)}${getRandomNumber(1,9)} ${getRandomNumber(1,9)}${getRandomElement(postcodeChars)}${getRandomElement(postcodeChars)}`;
+    } else if (countryCode === 'CA') {
+        const provinceAbbr = getRandomElement(Object.keys(data.address.provinces));
+        address.provinceName = data.address.provinces[provinceAbbr];
+        address.city = getRandomElement(data.address.citiesByProvince[provinceAbbr]);
+        address.provinceAbbr = provinceAbbr;
+        const postalChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        address.postalCode = `${getRandomElement(postalChars)}${getRandomNumber(0,9)}${getRandomElement(postalChars)} ${getRandomNumber(0,9)}${getRandomElement(postalChars)}${getRandomNumber(0,9)}`;
+    } else if (countryCode === 'AU') {
+        const stateAbbr = getRandomElement(Object.keys(data.address.states));
+        address.stateName = data.address.states[stateAbbr];
+        address.city = getRandomElement(data.address.citiesByState[stateAbbr]);
+        address.stateAbbr = stateAbbr;
+        address.postcode = `${getRandomNumber(2000, 4999)}`;
+    } else if (countryCode === 'DE') {
+        address.city = getRandomElement(data.address.cities);
+        address.postcode = `${getRandomNumber(10115, 99998)}`.padStart(5, '0');
+        address.street = getRandomElement(data.streetNames);
+    } else if (countryCode === 'JP') {
+        address.prefecture = getRandomElement(data.address.prefectures);
+        address.city = getRandomElement(data.address.cities);
+        address.wards = data.address.wards;
+        address.postcode = `${getRandomNumber(100, 999)}-${getRandomNumber(1000,9999)}`;
+    }
+    
+    address.full = data.address.format(address);
+    return address;
+  }
+
+  // --- Core Function ---
+  function generateData() {
+    const countryCode = countrySelect.value;
+    const data = countryData[countryCode];
+
+    const firstName = getRandomElement(data.firstNames);
+    const lastName = getRandomElement(data.lastNames);
+    const emailDomain = getRandomElement(data.emailDomains);
+    const email = `${firstName.toLowerCase()}.${lastName.toLowerCase()}${getRandomNumber(1,100)}@${emailDomain}`;
+    const phone = data.phoneFormat();
+    const nationalId = data.nationalIdFormat();
+    const job = getRandomElement(data.jobTitles);
+    const creditCard = generateCreditCard();
+    const address = generateAddress(countryCode);
+
+    const generated = {
+      name: `${firstName} ${lastName}`,
+      address: address.full,
+      phone,
+      email,
+      nationalIdName: data.nationalIdName,
+      nationalId,
+      job,
+      creditCard,
+    };
+
+    displayData(generated);
+    copyBtn.disabled = false;
+  }
+
+  function displayData(data) {
+      resultContainer.innerHTML = `
+          <div class="info-grid">
+              <div class="info-item"><strong>姓名:</strong> <span class="copyable">${data.name}</span></div>
+              <div class="info-item"><strong>工作:</strong> <span class="copyable">${data.job}</span></div>
+              <div class="info-item full-width"><strong>地址:</strong> <span class="copyable">${data.address}</span></div>
+              <div class="info-item"><strong>电话:</strong> <span class="copyable">${data.phone}</span></div>
+              <div class="info-item"><strong>邮箱:</strong> <span class="copyable">${data.email}</span></div>
+              <div class="info-item"><strong>${data.nationalIdName}:</strong> <span class="copyable">${data.nationalId}</span></div>
+              <div class="info-item"><strong>信用卡:</strong> <span class="copyable">${data.creditCard.issuer} - ${data.creditCard.number} (Expires: ${data.creditCard.expiry}, CVV: ${data.creditCard.cvv})</span></div>
+          </div>
+      `;
+  }
+
+  function copyData() {
+    const copyableSpans = resultContainer.querySelectorAll('.copyable');
+    let textToCopy = '';
+    
+    copyableSpans.forEach(span => {
+        const infoItem = span.closest('.info-item');
+        if (infoItem) {
+            const label = infoItem.querySelector('strong').textContent;
+            textToCopy += `${label} ${span.textContent}\n`;
+        }
+    });
+
+    navigator.clipboard.writeText(textToCopy.trim()).then(() => {
+        const originalText = copyBtn.querySelector('span').textContent;
+        copyBtn.querySelector('span').textContent = '已复制!';
+        copyBtn.disabled = true;
+        setTimeout(() => {
+            copyBtn.querySelector('span').textContent = '复制信息';
+            copyBtn.disabled = false;
+        }, 2000);
+    }).catch(err => {
+        console.error('无法复制文本: ', err);
+    });
+}
+
+  // --- Event Listeners ---
+  generateBtn.addEventListener('click', generateData);
+  copyBtn.addEventListener('click', copyData);
+  document.addEventListener('DOMContentLoaded', generateData);
+
+</script>
+
+<style>
+  :root {
+    --primary-color: #4f46e5;
+    --primary-glow: rgba(79, 70, 229, 0.5);
+    --secondary-color: #6b7280;
+    --background-color: #f3f4f6;
+    --card-background: #ffffff;
+    --text-color: #111827;
+    --subtle-text: #6b7280;
+    --border-color: #e5e7eb;
+    --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    --noise-texture: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMDAiIGhlaWdodD0iMzAwIj48ZmlsdGVyIGlkPSJub2lzZSI+PGZlVHVyYnVsZW5jZSB0eXBlPSJmcmFjdGFsTm9pc2UiIGJhc2VGcmVxdWVuY3k9IjAuOCIgbnVtT2N0YXZlcz0iMyIgc3RpdGNoVGlsZXM9InN0aXRjaCIvPjxmZUNvbXBvbmVudFRyYW5zZmVyIGNvbG9yLWludGVycG9sYXRpb24tZmlsdGVycz0ic1JHQiI+PGZlRnVuY1IgdHlwZT0ibGluZWFyIiBzbG9wZT0iMC4wNSIgaW50ZXJjZXB0PSIwIi8+PGZlRnVuY0cgdHlwZT0ibGluZWFyIiBzbG9wZT0iMC4wNSIgaW50ZXJjZXB0PSIwIi8+PGZlRnVuY0IgdHlwZT0ibGluZWFyIiBzbG9wZT0iMC4wNSIgaW50ZXJjZXB0PSIwIi8+PC9mZUNvbXBvbmVudFRyYW5zZmVyPjwvZmlsdGVyPjxyZWN0IHdpZHRoPSIzMDAiIGhlaWdodD0iMzAwIiBmaWx0ZXI9InVybCgjbm9pc2UpIiBvcGFjaXR5PSIwLjUiLz48L3N2Zz4=');
+  }
+
+  .generator-container {
+    max-width: 800px;
+    margin: 2rem auto;
+    padding: 2rem;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    color: var(--text-color);
+    position: relative;
+  }
+
+  .generator-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: var(--noise-texture);
+    pointer-events: none;
+    z-index: -1;
+  }
+
+  .header {
+    text-align: center;
+    margin-bottom: 2.5rem;
+  }
+
+  .title {
+    font-size: 2.5rem;
+    font-weight: 800;
+    margin-bottom: 0.5rem;
+  }
+
+  .subtitle {
+    font-size: 1.125rem;
+    color: var(--subtle-text);
+  }
+
+  .controls {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+    margin: 2rem 0;
+  }
+  
+  .select-container {
+      position: relative;
+  }
+
+  .select-container select {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background-color: var(--card-background);
+    color: var(--text-color);
+    font-weight: 600;
+    padding: 0.65rem 2.5rem 0.65rem 1.25rem;
+    border: 1px solid var(--border-color);
+    border-radius: 0.5rem;
+    cursor: pointer;
+    font-size: 1rem;
+  }
+
+  .select-container svg {
+      position: absolute;
+      right: 0.75rem;
+      top: 50%;
+      transform: translateY(-50%);
+      pointer-events: none;
+      color: var(--secondary-color);
+  }
+
+
+  .button-glow {
+    background-color: var(--primary-color);
+    color: white;
+    font-weight: 600;
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    box-shadow: 0 0 20px var(--primary-glow);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .button-glow:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0 30px var(--primary-glow);
+  }
+
+    .button-secondary {
+        background-color: var(--card-background);
+        color: var(--secondary-color);
+        font-weight: 600;
+        padding: 0.65rem 1.25rem;
+        border: 1px solid var(--border-color);
+        border-radius: 0.5rem;
+        cursor: pointer;
+        transition: all 0.2s ease-in-out;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .button-secondary:hover:not(:disabled) {
+        background-color: #f9fafb;
+        border-color: #d1d5db;
+    }
+
+    .button-secondary:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+
+  .result-card {
+    background: var(--card-background);
+    border-radius: 0.75rem;
+    padding: 2rem;
+    box-shadow: var(--shadow);
+    margin-bottom: 0;
+    border: 1px solid var(--border-color);
+  }
+
+  .result-card p {
+    color: var(--subtle-text);
+    text-align: center;
+  }
+
+    .info-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+    }
+
+    .info-item {
+        font-size: 0.95rem;
+        line-height: 1.6;
+    }
+
+    .info-item.full-width {
+        grid-column: 1 / -1;
+    }
+
+    .info-item strong {
+        color: var(--text-color);
+        font-weight: 600;
+        margin-right: 0.5em;
+    }
+
+    .info-item span {
+        color: var(--subtle-text);
+        word-break: break-all;
+    }
+
+    @media (max-width: 640px) {
+        .generator-container {
+            padding: 1rem;
+        }
+
+        .title {
+            font-size: 2rem;
+        }
+        
+        .info-grid {
+            grid-template-columns: 1fr;
+            gap: 0.75rem;
+        }
+
+        .controls {
+            flex-direction: column;
+        }
+    }
+</style>
