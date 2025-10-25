@@ -5,8 +5,8 @@
 
 <div class="generator-container">
   <div class="header">
-    <h1 class="title">随机信息生成器</h1>
-    <p class="subtitle">一键生成多国个人信息</p>
+    <h1 class="title">Random Profile Generator</h1>
+    <p class="subtitle">Generate personal information for multiple countries with one click</p>
   </div>
 
   <div class="controls">
@@ -23,7 +23,7 @@
     </div>
     <button id="generate-btn" class="button-glow">
       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
-      <span>生成新信息</span>
+      <span>Generate New Profile</span>
     </button>
   </div>
 
@@ -32,7 +32,7 @@
   <div class="controls">
     <button id="copy-btn" class="button-secondary" disabled>
       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-      <span>复制信息</span>
+      <span>Copy Profile</span>
     </button>
   </div>
 </div>
@@ -118,30 +118,30 @@
         firstNames: ['Maximilian', 'Alexander', 'Paul', 'Ben', 'Leon', 'Elias', 'Sophie', 'Marie', 'Maria', 'Mia', 'Emma', 'Hannah'],
         lastNames: ['Müller', 'Schmidt', 'Schneider', 'Fischer', 'Weber', 'Meyer', 'Wagner', 'Becker', 'Schulz', 'Hoffmann'],
         streetNames: ['Hauptstraße', 'Bahnhofstraße', 'Bergstraße', 'Dorfstraße', 'Schulstraße', 'Kirchplatz'],
-        jobTitles: ['Softwareentwickler', 'Projektmanager', 'Datenanalyst', 'Web-Designer', 'Marketing Manager', 'Buchhalter'],
+        jobTitles: ['Software Developer', 'Project Manager', 'Data Analyst', 'Web-Designer', 'Marketing Manager', 'Accountant'],
         phoneFormat: () => `0${getRandomNumber(100, 999)} ${getRandomNumber(1000000, 9999999)}`,
         nationalIdName: "Steuer-IdNr",
         nationalIdFormat: () => `${getRandomNumber(10,99)} ${getRandomNumber(100,999)} ${getRandomNumber(100,999)} ${getRandomNumber(100,999)}`,
         emailDomains: [...emailDomains.common, ...emailDomains.DE],
         address: {
-            cities: ['Berlin', 'Hamburg', 'München', 'Köln', 'Frankfurt am Main'],
+            cities: ['Berlin', 'Hamburg', 'Munich', 'Cologne', 'Frankfurt am Main'],
             format: (addr) => `${addr.street} ${getRandomNumber(1, 200)}, ${addr.postcode} ${addr.city}`
         }
     },
     "JP": {
         firstNames: ['Hiroshi', 'Takeshi', 'Akira', 'Kenji', 'Satoshi', 'Yuki', 'Yui', 'Aoi', 'Hina', 'Sakura', 'Rin', 'Emi'],
         lastNames: ['Sato', 'Suzuki', 'Takahashi', 'Tanaka', 'Watanabe', 'Ito', 'Yamamoto', 'Nakamura', 'Kobayashi', 'Kato'],
-        streetNames: ['中央', '本町', '駅前', '公園通り', '平和'],
-        jobTitles: ['ソフトウェアエンジニア', 'プロジェクトマネージャー', 'データサイエンティスト', 'ウェブデザイナー', 'マーケティング担当', '会計士'],
+        streetNames: ['Chuo', 'Honmachi', 'Ekimae', 'Koen Dori', 'Heiwa'],
+        jobTitles: ['Software Engineer', 'Project Manager', 'Data Scientist', 'Web Designer', 'Marketing Manager', 'Accountant'],
         phoneFormat: () => `0${getRandomNumber(8,9)}0-${getRandomNumber(1000, 9999)}-${getRandomNumber(1000, 9999)}`,
         nationalIdName: "My Number",
         nationalIdFormat: () => `${getRandomNumber(1000, 9999)} ${getRandomNumber(1000, 9999)} ${getRandomNumber(1000, 9999)}`,
         emailDomains: [...emailDomains.common, ...emailDomains.JP],
         address: {
-            prefectures: ['東京都', '大阪府', '京都府', '北海道', '福岡県'],
-            cities: ['東京', '横浜市', '大阪市', '名古屋市', '札幌市', '福岡市', '京都市'],
+            prefectures: ['Tokyo', 'Osaka', 'Kyoto', 'Hokkaido', 'Fukuoka'],
+            cities: ['Tokyo', 'Yokohama', 'Osaka', 'Nagoya', 'Sapporo', 'Fukuoka', 'Kyoto'],
             format: (addr) => `〒${addr.postcode} ${addr.prefecture}${addr.city}${getRandomElement(addr.wards)} ${getRandomNumber(1,10)}-${getRandomNumber(1,20)}`,
-            wards: ['中央区', '新宿区', '渋谷区', '北区', '南区']
+            wards: ['Chuo-ku', 'Shinjuku-ku', 'Shibuya-ku', 'Kita-ku', 'Minami-ku']
         }
     }
   };
@@ -251,13 +251,13 @@
   function displayData(data) {
       resultContainer.innerHTML = `
           <div class="info-grid">
-              <div class="info-item"><strong>姓名:</strong> <span class="copyable">${data.name}</span></div>
-              <div class="info-item"><strong>工作:</strong> <span class="copyable">${data.job}</span></div>
-              <div class="info-item full-width"><strong>地址:</strong> <span class="copyable">${data.address}</span></div>
-              <div class="info-item"><strong>电话:</strong> <span class="copyable">${data.phone}</span></div>
-              <div class="info-item"><strong>邮箱:</strong> <span class="copyable">${data.email}</span></div>
+              <div class="info-item"><strong>Name:</strong> <span class="copyable">${data.name}</span></div>
+              <div class="info-item"><strong>Job:</strong> <span class="copyable">${data.job}</span></div>
+              <div class="info-item full-width"><strong>Address:</strong> <span class="copyable">${data.address}</span></div>
+              <div class="info-item"><strong>Phone:</strong> <span class="copyable">${data.phone}</span></div>
+              <div class="info-item"><strong>Email:</strong> <span class="copyable">${data.email}</span></div>
               <div class="info-item"><strong>${data.nationalIdName}:</strong> <span class="copyable">${data.nationalId}</span></div>
-              <div class="info-item"><strong>信用卡:</strong> <span class="copyable">${data.creditCard.issuer} - ${data.creditCard.number} (Expires: ${data.creditCard.expiry}, CVV: ${data.creditCard.cvv})</span></div>
+              <div class="info-item"><strong>Credit Card:</strong> <span class="copyable">${data.creditCard.issuer} - ${data.creditCard.number} (Expires: ${data.creditCard.expiry}, CVV: ${data.creditCard.cvv})</span></div>
           </div>
       `;
   }
@@ -276,14 +276,14 @@
 
     navigator.clipboard.writeText(textToCopy.trim()).then(() => {
         const originalText = copyBtn.querySelector('span').textContent;
-        copyBtn.querySelector('span').textContent = '已复制!';
+        copyBtn.querySelector('span').textContent = 'Copied!';
         copyBtn.disabled = true;
         setTimeout(() => {
-            copyBtn.querySelector('span').textContent = '复制信息';
+            copyBtn.querySelector('span').textContent = 'Copy Profile';
             copyBtn.disabled = false;
         }, 2000);
     }).catch(err => {
-        console.error('无法复制文本: ', err);
+        console.error('Could not copy text: ', err);
     });
 }
 
